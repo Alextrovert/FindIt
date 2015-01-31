@@ -1,5 +1,7 @@
 package caiji.alexli.findit;
 
+import android.location.Address;
+import android.location.Geocoder;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -17,6 +19,9 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+
+import java.io.IOException;
+import java.util.Locale;
 
 public class MainActivity extends Activity implements
         GoogleApiClient.ConnectionCallbacks,
@@ -42,8 +47,8 @@ public class MainActivity extends Activity implements
      */
     private boolean mIsInResolution;
     private Location mLastLocation;
-    private String mLatitudeText, mLongitudeText;
-    private TextView lat, lng;
+    private String mLatitudeText = "", mLongitudeText = "", mAddressText = "";
+    private TextView lat, lng, address;
 
     /**
      * Called when the activity is starting. Restores the activity state.
@@ -133,16 +138,32 @@ public class MainActivity extends Activity implements
             mLatitudeText = String.valueOf(mLastLocation.getLatitude());
             mLongitudeText = String.valueOf(mLastLocation.getLongitude());
             displayCoordinates();
+            getAddress(mLastLocation.getLatitude(), mLastLocation.getLongitude());
         }
     }
 
     protected void displayCoordinates() {
         lat = (TextView) findViewById(R.id.lat);
         lng = (TextView) findViewById(R.id.lng);
+        address = (TextView) findViewById(R.id.address);
         lat.setText("Latitude: " + mLatitudeText);
         lng.setText("Longitude: " + mLongitudeText);
+        address.setText("Address: " + mAddressText);
     }
 
+    protected void getAddress(double latitude, double longitude) {
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        try {
+            Address mAddress = geocoder.getFromLocation(latitude, longitude, 1).get(0);
+            int maxAddressLineIndex = mAddress.getMaxAddressLineIndex();
+            for (int i = 0; i <= maxAddressLineIndex; i++) {
+                mAddressText += mAddress.getAddressLine(i) + "\n";
+            }
+            Log.i(TAG, mAddressText);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     /**
      * Called when {@code mGoogleApiClient} connection is suspended.
      */
