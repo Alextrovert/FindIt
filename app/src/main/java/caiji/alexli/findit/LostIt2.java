@@ -12,10 +12,19 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
 
 public class LostIt2 extends Activity {
 
@@ -32,12 +41,9 @@ public class LostIt2 extends Activity {
         mDescription = (EditText) findViewById(R.id.editText2);
         mReward = (EditText) findViewById(R.id.editText3);
 
-
-
         address = getIntent().getStringExtra("address");
         latitude = getIntent().getDoubleExtra("latitude", 0);
         longitude = getIntent().getDoubleExtra("longitude", 0);
-
 
 
         Button submit = (Button)findViewById(R.id.button);
@@ -56,8 +62,8 @@ public class LostIt2 extends Activity {
                     // send itemName, description, address, latitude, longitude, reward to database
                     Log.i("send stuff to database", itemName + " " + description + " " + address + " " + latitude + " " + longitude + " " + reward);
 
-                    String url = "http://alexli.ca/filelost.php?";
-                    url = "name=" + URLEncoder.encode(itemName) + "&" +
+                    String url = "http://alexli.ca/iji/filelost.php?" +
+                          "name=" + URLEncoder.encode(itemName) + "&" +
                           "desc=" + URLEncoder.encode(description) + "&" +
                           "address=" + URLEncoder.encode(address) + "&" +
                           "lat=" + URLEncoder.encode("" + latitude) + "&" +
@@ -65,8 +71,7 @@ public class LostIt2 extends Activity {
                           "reward=" + URLEncoder.encode(reward) + "&" +
                           "date=" + URLEncoder.encode((new SimpleDateFormat("yyyy/MM/dd HH:mm:ss")).format(new Date()));
 
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                    startActivity(browserIntent);
+                    Log.i("downloaded", download(url));
 
                     // then return to main activity
                     finish();
@@ -76,6 +81,66 @@ public class LostIt2 extends Activity {
 
     }
 
+    public static String download(String url)
+    {
+        String result = "";
+        HttpClient httpclient = new DefaultHttpClient();
 
+        // Prepare a request object
+        HttpGet httpget = new HttpGet(url);
+
+        // Execute the request
+        HttpResponse response;
+        try {
+            response = httpclient.execute(httpget);
+            // Examine the response status
+            Log.i("Praeda",response.getStatusLine().toString());
+
+            // Get hold of the response entity
+            HttpEntity entity = response.getEntity();
+            // If the response does not enclose an entity, there is no need
+            // to worry about connection release
+
+            if (entity != null) {
+
+                // A Simple JSON Response Read
+                InputStream instream = entity.getContent();
+                result= convertStreamToString(instream);
+                // now you have the string representation of the HTML request
+                instream.close();
+            }
+
+
+        } catch (Exception e) {}
+
+        return result;
+    }
+
+    private static String convertStreamToString(InputStream is) {
+    /*
+     * To convert the InputStream to String we use the BufferedReader.readLine()
+     * method. We iterate until the BufferedReader return null which means
+     * there's no more data to read. Each line will appended to a StringBuilder
+     * and returned as String.
+     */
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+
+        String line = null;
+        try {
+            while ((line = reader.readLine()) != null) {
+                sb.append(line + "\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return sb.toString();
+    }
 
 }
