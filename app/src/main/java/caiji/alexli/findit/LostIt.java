@@ -59,7 +59,7 @@ public class LostIt extends FragmentActivity implements
      */
     private boolean mIsInResolution;
     private Location mLastLocation;
-    private double mLatitude, mLongitude;
+    private double mLatitude = 43.668056, mLongitude = -79.399722;
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private String mAddressText = "\nTap address on map,\nthen tap here to confirm.";

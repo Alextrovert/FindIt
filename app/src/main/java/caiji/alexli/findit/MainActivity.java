@@ -25,6 +25,7 @@ import com.google.android.gms.location.LocationServices;
 import java.io.IOException;
 import java.util.Locale;
 
+
 public class MainActivity extends Activity {
 
 
