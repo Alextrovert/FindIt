@@ -1,10 +1,12 @@
 package caiji.alexli.findit;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,6 +33,12 @@ public class LostIt2 extends Activity {
     private EditText mItemName, mDescription, mReward;
     private String itemName, description, reward, address;
     private double latitude, longitude;
+
+    private String getPhoneNumber() {
+        TelephonyManager mTelephonyMgr;
+        mTelephonyMgr = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+        return mTelephonyMgr.getLine1Number();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +77,7 @@ public class LostIt2 extends Activity {
                           "lat=" + URLEncoder.encode("" + latitude) + "&" +
                           "lng=" + URLEncoder.encode("" + longitude) + "&" +
                           "reward=" + URLEncoder.encode(reward) + "&" +
+                          "phone=" + URLEncoder.encode(getPhoneNumber()) + "&" +
                           "date=" + URLEncoder.encode((new SimpleDateFormat("yyyy/MM/dd HH:mm:ss")).format(new Date()));
 
                     Log.i("downloaded", download(url));

@@ -69,6 +69,8 @@ public class LostIt extends FragmentActivity implements
     private Geocoder geocoder;
     private Button address;
     private boolean locationSelected;
+    private Marker selectedLocation;
+
     /**
      * Called when the activity is starting. Restores the activity state.
      */
@@ -117,6 +119,10 @@ public class LostIt extends FragmentActivity implements
                     }
                     address.setText("Where was your item last seen?" + mAddressText);
                     locationSelected = true;
+                    if (selectedLocation != null) {
+                        selectedLocation.remove();
+                    }
+                    selectedLocation = mMap.addMarker(new MarkerOptions().position(latLng).title("Item last seen here"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

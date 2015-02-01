@@ -1,12 +1,15 @@
 package caiji.alexli.findit;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
@@ -14,6 +17,11 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
+import android.location.Location;
+import android.widget.Button;
+
+import java.net.URLEncoder;
 
 
 public class FindIt extends Activity implements
@@ -39,6 +47,14 @@ public class FindIt extends Activity implements
      * waiting for resolution intent to return.
      */
     private boolean mIsInResolution;
+    private Location mLastLocation;
+    private double mLatitude = 43.668056, mLongitude = -79.399722;
+
+    private String getPhoneNumber() {
+        TelephonyManager mTelephonyMgr;
+        mTelephonyMgr = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+        return mTelephonyMgr.getLine1Number();
+    }
 
     /**
      * Called when the activity is starting. Restores the activity state.
@@ -50,10 +66,24 @@ public class FindIt extends Activity implements
         setContentView(R.layout.find_it);
 
         WebView myWebView = (WebView) findViewById(R.id.find_it);
-        myWebView.loadUrl("http://alexli.ca/iji/findit.php");
+        myWebView.loadUrl("http://alexli.ca/iji/findit.php?phone=" + getPhoneNumber() +
+                          "&lat=" + URLEncoder.encode("" + mLatitude) +
+                          "&lng=" + URLEncoder.encode("" + mLongitude));
 
         WebSettings webSettings = myWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
+
+        Button reload = (Button)findViewById(R.id.reload);
+
+        reload.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                finish();
+                startActivity(getIntent());
+            }
+        });
+
 
         if (savedInstanceState != null) {
             mIsInResolution = savedInstanceState.getBoolean(KEY_IN_RESOLUTION, false);
@@ -129,6 +159,12 @@ public class FindIt extends Activity implements
     public void onConnected(Bundle connectionHint) {
         Log.i(TAG, "GoogleApiClient connected");
         // TODO: Start making API requests.
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                mGoogleApiClient);
+        if (mLastLocation != null) {
+            mLatitude = mLastLocation.getLatitude();
+            mLongitude = mLastLocation.getLongitude();
+        }
     }
 
     /**
