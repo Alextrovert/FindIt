@@ -2,6 +2,7 @@ package caiji.alexli.findit;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,6 +11,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 public class LostIt2 extends Activity {
@@ -50,6 +55,19 @@ public class LostIt2 extends Activity {
                 if (!(itemName.isEmpty() || description.isEmpty())) {
                     // send itemName, description, address, latitude, longitude, reward to database
                     Log.i("send stuff to database", itemName + " " + description + " " + address + " " + latitude + " " + longitude + " " + reward);
+
+                    String url = "http://alexli.ca/filelost.php?";
+                    url = "name=" + URLEncoder.encode(itemName) + "&" +
+                          "desc=" + URLEncoder.encode(description) + "&" +
+                          "address=" + URLEncoder.encode(address) + "&" +
+                          "lat=" + URLEncoder.encode("" + latitude) + "&" +
+                          "lng=" + URLEncoder.encode("" + longitude) + "&" +
+                          "reward=" + URLEncoder.encode(reward) + "&" +
+                          "date=" + URLEncoder.encode((new SimpleDateFormat("yyyy/MM/dd HH:mm:ss")).format(new Date()));
+
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    startActivity(browserIntent);
+
                     // then return to main activity
                     finish();
                 }
