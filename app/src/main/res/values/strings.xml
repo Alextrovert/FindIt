@@ -7,5 +7,7 @@
     <string name="title_activity_fetch_address_intent_service">FetchAddressIntentService</string>
     <string name="title_activity_lost_it">LostIt</string>
     <string name="title_activity_find_it">FindIt</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_lost_it2">LostIt2</string>
 
 </resources>

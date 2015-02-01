@@ -37,7 +37,6 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.activity_main);
 
-        Log.i("test", "test");
 
         Button lostBtn = (Button)findViewById(R.id.lostitbtn);
 

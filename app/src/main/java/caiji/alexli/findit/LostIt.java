@@ -20,11 +20,15 @@ import android.location.Geocoder;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
@@ -58,10 +62,13 @@ public class LostIt extends FragmentActivity implements
     private double mLatitude, mLongitude;
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
-    private String mAddressText = "";
+    private String mAddressText = "\nTap address on map,\nthen tap here to confirm.";
     private GoogleMap.OnMapClickListener mClickListener;
+    private GoogleMap.OnMapLongClickListener mLongClickListener;
+
     private Geocoder geocoder;
-    private TextView address;
+    private Button address;
+    private boolean locationSelected;
     /**
      * Called when the activity is starting. Restores the activity state.
      */
@@ -79,23 +86,71 @@ public class LostIt extends FragmentActivity implements
 
         geocoder = new Geocoder(this, Locale.getDefault());
 
+        address = (Button) findViewById(R.id.address);
+        address.setText("Where was your item last seen?" + mAddressText);
+        address.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (locationSelected) {
+                    Intent intent = new Intent(LostIt.this, LostIt2.class);
+                    intent.putExtra("address", mAddressText);
+                    backToCoordinates();
+                    intent.putExtra("latitude", mLatitude);
+                    intent.putExtra("longitude", mLongitude);
+                    startActivity(intent);
+
+                    // return to main activity
+                    finish();
+                }
+            }
+        });
+
         mMap.setOnMapClickListener(mClickListener = new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
                 try {
                     Address mAddress = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1).get(0);
                     int maxAddressLineIndex = mAddress.getMaxAddressLineIndex();
-                    mAddressText = "";
+                    mAddressText = "\n";
                     for (int i = 0; i <= maxAddressLineIndex; i++) {
                         mAddressText += "\n" + mAddress.getAddressLine(i);
                     }
-                    address = (TextView) findViewById(R.id.address);
-                    address.setText("Address: " + mAddressText);
+                    address.setText("Where was your item last seen?" + mAddressText);
+                    locationSelected = true;
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         });
+
+        mMap.setOnMapLongClickListener(mLongClickListener = new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+                try {
+                    Address mAddress = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1).get(0);
+                    int maxAddressLineIndex = mAddress.getMaxAddressLineIndex();
+                    mAddressText = "\n";
+                    for (int i = 0; i <= maxAddressLineIndex; i++) {
+                        mAddressText += "\n" + mAddress.getAddressLine(i);
+                    }
+                    address.setText("Where was your item last seen?" + mAddressText);
+                    locationSelected = true;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    protected void backToCoordinates() {
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        try {
+            Address mAddress = geocoder.getFromLocationName(mAddressText, 1).get(0);
+            mLatitude = mAddress.getLatitude();
+            mLongitude = mAddress.getLongitude();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -133,13 +188,11 @@ public class LostIt extends FragmentActivity implements
     }
 
     /**
-     * This is where we can add markers or lines, add listeners or move the camera. In this case, we
-     * just add a marker near Africa.
+     * This is where we can add markers or lines, add listeners or move the camera.
      * <p/>
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
     private void setUpMap() {
-        mMap.addMarker(new MarkerOptions().position(new LatLng(mLatitude, mLongitude)).title("Marker"));
     }
 
     /**
@@ -217,6 +270,8 @@ public class LostIt extends FragmentActivity implements
             mLatitude = mLastLocation.getLatitude();
             mLongitude = mLastLocation.getLongitude();
         }
+        mMap.addMarker(new MarkerOptions().position(new LatLng(mLatitude, mLongitude)).title("You are here"));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mLatitude, mLongitude), 10));
     }
 
     /**
