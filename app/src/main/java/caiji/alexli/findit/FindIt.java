@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
 import android.os.Bundle;
 import android.util.Log;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -46,6 +48,12 @@ public class FindIt extends Activity implements
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.find_it);
+
+        WebView myWebView = (WebView) findViewById(R.id.find_it);
+        myWebView.loadUrl("http://alexli.ca/iji/findit.php");
+
+        WebSettings webSettings = myWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
 
         if (savedInstanceState != null) {
             mIsInResolution = savedInstanceState.getBoolean(KEY_IN_RESOLUTION, false);
